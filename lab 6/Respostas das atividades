@@ -1,0 +1,18 @@
+Atividade 1
+3 - Ocorre pois não há qualquer mecanismo que garanta uma ordem de execução das threads. Assim que recursos estiverem disponiveis, qualquer thread pode os usar para poder executar.
+
+5 - Com a adição da função join() o fluxo de todas as threads precisam terminar no loop de execução nas linhas 43-46, e portanto a função main só chega ao final depois de todas as threads terminarem suas execuções.
+
+Atividade 2
+1 - A classe 'Ola' extende a classe 'Thread' e portanto pode ser executada como uma instância de thread, enquanto que no código 'HelloThread' a classe 'Hello' não herda nada da classe thread e por consequência durante a criação de threads uma instância de thread precisa ser criada passando uma instância de 'Hello' como argumento.
+
+Atividade 3
+1 - O loop de incrementação no método 'run' da classe 'T', já que acessa recursos compartilhados entre as threads, a variável 'r'.
+	A saída ideal seria 200000, cada thread incrementando um total de 100000 vezes, com um total de 2 threads.
+
+2 - Como a exclusão mútua não é garantida, algumas incrementações de uma das threads são perdidas pois, não sendo ações atômicas, são interrompidas por incrementações de outras threads.
+
+Atividade 4
+3 - Sim, agora o metodo de incrementação é sincronizado, o que quer dizer que usa um lock para poder ser executado sem interrupções, garantindo dessa forma exclusão mútua entre as threads.
+
+

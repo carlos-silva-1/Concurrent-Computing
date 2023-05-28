@@ -1,0 +1,81 @@
+Solucao sem prioridades
+Codigo: prior_leit.c
+Codigo modificado: leit_check.c
+
+
+Para testar se as threads escritoras sofreriam por inanicao, algumas modificacoes foram feitas ao codigo 'prior_leit.c':
+- o seguinte trecho de codigo foi adicionado as funcoes 'InicLeit' e 'InicEscr' para que demorassem mais a executar:
+
+	int boba1, boba2;
+   	for (int passo=0; passo < 800000; passo++) {
+    	boba1=100; boba2=-100; while (boba2 < boba1) boba2++; }
+    	
+- foram adicionados dois contadores que contam quantas vezes uma thread leitora ou escritora executou, que sao incrementadas 
+  nas funcoes 'leitor' e 'escritor'.
+
+
+Testes:
+# de threads leitoras  : 2
+# de threads escritoras: 2
+Quando o contador de execucoes por threads leitoras chegou a 200, o contador de threads escritoras estava em 199.
+
+# de threads leitoras  : 5
+# de threads escritoras: 5
+Execucoes por threads leitoras: 200, execucoes por threads escritoras: 130.
+
+# de threads leitoras  : 10
+# de threads escritoras: 10
+Execucoes por threads leitoras: 200, execucoes por threads escritoras: 17.
+
+
+
+
+Prioridade para escritores
+Codigo: prior_escr.c
+Codigo modificado: escr_check.c
+
+
+Nessa solucao foi adicionada a variavel 'quer_escrever' que serve como um contador de quantas threads escritoras querem executar.
+Contanto que quer_escrever != 0, todas as threads leitoras que querem ler ficarao presas em seu loop de entrada, esperando que 
+nenhuma thread escritora queira escrever ou esteja executando.
+
+Para testar se as threads leitoras sofreriam por inanicao, as mudancas descritas anteriormente sao implementadas no codigo.
+
+Testes:
+# de threads leitoras  : 2
+# de threads escritoras: 2
+Quando o contador de execucoes por threads escritoras chegou a 200, o contador de threads escritoras estava em 198.
+
+# de threads leitoras  : 5
+# de threads escritoras: 5
+Execucoes por threads escritoras: 200, execucoes por threads leitoras: 118.
+
+# de threads leitoras  : 10
+# de threads escritoras: 10
+Execucoes por threads escritoras: 200, execucoes por threads leitoras: 45.
+
+
+
+Prioridades iguais
+Codigo: prior_igual.c
+Codigo modificado: igual_check.c
+
+
+Duas modificacoes foram realizadas:
+- foi adicionada uma nova condicao para que threads leitoras possam passar pelo seu loop de entrada: o numero de threads leitoras 
+executando deve ser igual a 0 ( mesma condicao que foi imposta as threads escritoras desde o inicio );
+- agora somente utilizamos uma variavel pthread_cond_t, para que assim que uma thread termine sua execucao, qualquer outra 
+thread possa executar.
+
+Testes:
+# de threads leitoras  : 2
+# de threads escritoras: 2
+Quando o contador de execucoes por threads leitoras chegou a 200, o contador de threads escritoras estava em 198.
+
+# de threads leitoras  : 5
+# de threads escritoras: 5
+Execucoes por threads leitoras: 200, execucoes por threads escritoras: 204.
+
+# de threads leitoras  : 10
+# de threads escritoras: 10
+Execucoes por threads leitoras: 200, execucoes por threads escritoras: 203.

@@ -1,0 +1,69 @@
+//-----VARIAVEIS DE SINCRONIZACAO
+
+mutex //lock
+cond_print, cond_req //cond_print dita se a impressora pode imprimir; cond_req se o usuario pode fazer mais um requisito
+
+//-----PARTE DA IMPRESSORA
+
+fila[] //fila de impressão
+TAM_FILA = T //T é um inteiro
+frente = -1 //indice da primeira posicao
+tras = -1 //indice da ultima posicao
+
+//checa se a fila esta cheia
+cheio()
+	se frente e tras sao o mesmo indice && sao diferente de -1 //se fossem igual a -1, a fila estaria vazia
+		return 1
+	return 0
+
+//checa se a fila esta vazia
+vazio()
+	se frente e tras sao iguais a -1 //os indices somente sao iguais a -1 quando a fila esta vazia
+		return 1
+	return 0
+
+//imprime o primeiro elemento e o remove
+print()
+	imprime primeiro elemento na fila
+
+	remove elemento da fila
+	frente aponta para a proxima posicao //se estava apontando para a ultima posicao do vetor, aponta para a primeira posicao do vetor
+	se frente e tras sao o mesmo indice //se consumido era ultimo elemento, indica que fila esta vazia
+		front = -1
+		back = -1
+
+imprimir()
+	enquanto 1
+		lock mutex
+
+		enquanto vazio() //se fila esta vazia, espera usuarios fazerm requerimentos
+			wait cond_print, mutex
+
+		enquanto !vazio() //imprime enquanto a fila nao estiver vazia
+			print()
+
+		broadcast cond_req //libera todos os usuarios a fazer requerimentos
+		unlock mutex
+
+//-----FIM DA PARTE DA IMPRESSORA
+
+//-----PARTE DO USUARIO
+
+requisicao( arquivo )
+	lock mutex
+
+	enquanto cheio() //enqunato a fila estiver cheia, thread espera
+		wait cond_req, mutex
+
+	se vazio() //se for primeira insercao a modificação dos ponteiros é um caso separado
+		front = 0
+		back = 1
+		fila[ frente ] = arquivo //insere o elemento da posicao indicada por frente
+	senao
+		fila[ tras ] = arquivo
+		tras aponta para a proxima posicao //se estava apontando para a ultima posicao do vetor, aponta para a primeira posicao do vetor
+
+	signal cond_print //libera a impressao já que existem posicoes ocupadas
+	unlock mutex
+
+//-----FIM DA PARTE DO USUARIO

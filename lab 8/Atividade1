@@ -1,0 +1,86 @@
+1a
+
+"em_e" deve começar com 1, já que caso o contrário, se começasse com 0, threads escritoras seriam impedidas de progredir pela primeira chamada a "sem_wait"; e caso fosse maior que 1, não cumpriria seu papel de garantir a exclusão mútua, já que uma thread poderia passar e decrementar o valor do semáforo por um e ainda manter seu valor maior que 0, ou seja deixando o semáforo incapaz de impedir a execução da seção crítica de novas threads escritoras.
+
+Para descobrir o valor inicial de "em_l" a mesma lógica aplicada a "em_e" é usada: se for 0 impediria todas as threads leitoras de executarem, se maior que 1 não garantiria a exclusão mútua, e portanto seu valor inicial é 1.
+
+Caso "leit" seja 0, as threads seriam bloqueadas sem possibilidade de progredir. Se "leit" > 1, por exemplo 2, o primeiro escritor decrementa por 1, o que não bloqueia um novo leitor de poder executar.
+Portanto o valor inicial de "leit" é 1.
+
+Caso "escr" seja 0, nenhuma thread poderá executar.
+Imediatamente antes do escritor começar a escrever ele chama "sem_wait":
+
+sem_wait(&escr);
+//escreve...
+sem_post(&escr);
+
+O escritor deve ter exclusão mútua garantida ao executar o trecho acima, já que escreve na memória compartilhada. A única forma de garantir isso é caso o valor inicial de "escr" seja 1, caso o contrário, caso duas threads escritoras executem sucessivamente ambas poderiam acessar suas seções críticas simultaneamente. Portanto o valor inicial de "escr" é 1.
+
+1b
+
+O uso do semaforo "em_l" no começo de leitores não é necessário já que a chamada a sem_wait(&leit) garante a exclusão mútua naquele trecho.
+
+1c
+
+lab8.c
+
+1d
+
+void* leitor( void* args )
+{
+	int *id = ( int* ) args;
+	
+	while( 1 )
+	{
+		pthread_mutex_lock( &mutex );
+		l++;
+		if( l==1 )
+			sem_wait( &escr );
+		pthread_mutex_unlock( &mutex );
+		
+		le( *id );
+		
+		pthread_mutex_lock( &mutex );
+		l--;
+		if(l==0)
+			sem_post(&escr);
+		pthread_mutex_unlock( &mutex );
+	}
+	
+	pthread_exit( NULL );
+}
+
+void* escritor( void* args )
+{
+	int *id	= ( int* ) args;
+	
+	while( 1 )
+	{
+		pthread_mutex_lock( &mutex );
+		e++;
+		if( e == 1 )
+		{
+			sem_wait( &leit );
+		}
+		querEscrever--;
+		pthread_mutex_unlock( &mutex );
+		
+		pthread_mutex_lock( &mutex );
+		escreve( *id, (rand()+1)%10 );
+		pthread_mutex_unlock( &mutex );
+		
+		pthread_mutex_lock(&mutex);
+		e--;
+		if( e == 0 )
+		{
+			sem_post( &leit );
+		}
+		pthread_mutex_unlock( &mutex );
+	}
+	
+	pthread_exit( NULL );
+}
+
+1e
+
+Não são recursivos pois a lógica do problema é refletida melhor pelo uso de semáforos, já que a comunicação entre os tipos de threads é necessária para a sincronização.
